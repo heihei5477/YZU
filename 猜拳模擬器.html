@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<title>三戰兩勝猜拳模擬器</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; background: #f0f8ff; }
+  h1 { color: #333; }
+  button { padding: 10px 20px; margin: 5px; cursor: pointer; font-size: 16px; }
+  #resultArea { margin-top: 20px; background: #fff; padding: 15px; border-radius: 6px; box-shadow: 0 0 8px rgba(0,0,0,0.1);}
+  #stats { margin-top: 15px; font-weight: bold; }
+  #finalResult { font-size: 20px; color: #c62828; margin-top: 15px; }
+</style>
+</head>
+<body>
+
+<h1>三戰兩勝猜拳模擬器</h1>
+
+<p>請點選你的出拳：</p>
+<button onclick="playerPlay('石頭')">✊ 石頭</button>
+<button onclick="playerPlay('剪刀')">✌ 剪刀</button>
+<button onclick="playerPlay('布')">🖐 布</button>
+<button onclick="resetGame()" style="background:#f44336; color:#fff;">重置遊戲</button>
+
+<div id="resultArea" style="display:none;">
+  <h3>局數結果</h3>
+  <div id="roundResults"></div>
+  <div id="stats"></div>
+  <div id="finalResult"></div>
+</div>
+
+<script>
+  const choices = ['石頭', '剪刀', '布'];
+  let roundsPlayed = 0;
+  const maxRounds = 3;
+  let results = { '玩家勝': 0, 'C勝': 0, '平手': 0 };
+  let roundLog = [];
+  let gameOver = false;
+
+  function computerPlay() {
+    const idx = Math.floor(Math.random() * 3);
+    return choices[idx];
+  }
+
+  function judge(player, computer) {
+    if (player === computer) return '平手';
+    if (
+      (player === '石頭' && computer === '剪刀') ||
+      (player === '剪刀' && computer === '布') ||
+      (player === '布' && computer === '石頭')
+    ) return '玩家勝';
+    return 'C勝';
+  }
+
+  function playerPlay(playerChoice) {
+    if (gameOver) {
+      alert('遊戲已結束，請重置再來一輪喔～');
+      return;
+    }
+
+    const compChoice = computerPlay();
+    const outcome = judge(playerChoice, compChoice);
+    roundsPlayed++;
+    results[outcome]++;
+    roundLog.push(`第${roundsPlayed}局：你出${playerChoice}，C出${compChoice} → ${outcome}`);
+
+    updateDisplay();
+
+    if (results['玩家勝'] === 2 || results['C勝'] === 2 || roundsPlayed === maxRounds) {
+      endGame();
+    }
+  }
+
+  function updateDisplay() {
+    document.getElementById('resultArea').style.display = 'block';
+    document.getElementById('roundResults').innerHTML = roundLog.join('<br/>');
+
+    const winRate = ((results['玩家勝'] / roundsPlayed) * 100).toFixed(1);
+    const loseRate = ((results['C勝'] / roundsPlayed) * 100).toFixed(1);
+    const drawRate = ((results['平手'] / roundsPlayed) * 100).toFixed(1);
+
+    document.getElementById('stats').innerHTML = `
+      <br/>共進行 ${roundsPlayed} 局<br/>
+      你勝率：${winRate}%<br/>
+      C勝率：${loseRate}%<br/>
+      平手率：${drawRate}%
+    `;
+  }
+
+  function endGame() {
+    gameOver = true;
+    let finalMessage = '';
+
+    if (results['玩家勝'] === 2) {
+      finalMessage = '🎉 你贏得了這場比賽！';
+    } else if (results['C勝'] === 2) {
+      finalMessage = '😈 C 獲勝，你下次再加油！';
+    } else {
+      if (results['玩家勝'] === results['C勝']) {
+        finalMessage = '🤝 雙方平手，勢均力敵呢～';
+      } else if (results['玩家勝'] > results['C勝']) {
+        finalMessage = '🎉 雖沒兩勝，但你小勝一局！';
+      } else {
+        finalMessage = '😈 C 略勝一籌～';
+      }
+    }
+
+    document.getElementById('finalResult').textContent = finalMessage;
+  }
+
+  function resetGame() {
+    roundsPlayed = 0;
+    results = { '玩家勝': 0, 'C勝': 0, '平手': 0 };
+    roundLog = [];
+    gameOver = false;
+    document.getElementById('resultArea').style.display = 'none';
+    document.getElementById('finalResult').textContent = '';
+  }
+</script>
+
+</body>
+</html>
